@@ -1,4 +1,6 @@
 app/__pycache__
+app/models/__pycache__
+app/management/commands/__pycache__
 app/storage/csv/release_patients.csv
 app/storage/csv/release_test_patients.csv
 app/storage/csv/release_train_patients.csv
