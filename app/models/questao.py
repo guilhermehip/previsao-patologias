@@ -1,4 +1,5 @@
 from django.db import models
+from django.apps import apps
 
 class Questao(models.Model):
     class Meta:
@@ -15,12 +16,11 @@ class Questao(models.Model):
         on_delete=models.CASCADE,
         null=True,  # Permite nulos para a primeira instância
         blank=True,  # Permite campos em branco para a primeira instância
+        db_column='id_questao_mae'
     )
-    slug = models.CharField()
+    id_condicao_saude = models.ForeignKey(to='app.CondicaoSaude', on_delete=models.CASCADE, db_column='id_condicao_saude')
     texto = models.TextField()
-    validador = models.JSONField()
     tipo_resposta = models.CharField(choices={i: i for i in TIPO_RESPOSTA})
     resposta_padrao = models.CharField()
-    antecedente = models.BooleanField()
     dt_criacao = models.DateTimeField(auto_now=False, auto_now_add=True, null=True)
     dt_atualizacao = models.DateTimeField(auto_now=True, auto_now_add=False, null=True)

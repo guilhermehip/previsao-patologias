@@ -1,0 +1,25 @@
+Para rodar um script:
+python manage.py [nome_do_script]
+
+Para realizar o rollback das migrations para o estaro "Zero":
+python manage.py migrate app zero
+
+Para criar uma migration:
+python manage.py makemigrations
+
+Para migrar:
+python manage.py migrate
+
+Para rodar o servidor:
+python manage.py runserver 3333
+
+Ordem de run dos scripts:
+1 - popularPacientes
+2 - popularPatologias
+3 - popularCondicoesSaude
+4 - popularPatologiasCondicoes
+5 - popularQuestoes
+6 - popularQuestoesFk
+
+// TODO: AS PERGUNTAS POSSUEM VALORES POSSÍVEIS (ESTUDAR JSONB OU COLUNA NOVA)
+// TODO: FAZER TABELAS FALTANTES (FICHA CLÍNICA E TB_DIAGNOSTICOS)
