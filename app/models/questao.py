@@ -8,6 +8,7 @@ class Questao(models.Model):
     TIPO_RESPOSTA = {
       "binaria": "Binaria",
       "categorica": "Categorica",
+      "multiescolha": "Multiescolha"
     }
   
     id_questao = models.AutoField(primary_key=True)

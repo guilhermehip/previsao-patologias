@@ -20,10 +20,13 @@ class Command(BaseCommand):
                 texto = valor.get('question_en', {}).upper()
                 resposta_padrao = valor.get('default_value', {})
                 
-                if(valor.get('data_type', {}).upper() == 'B'):
+                tipo_dado = valor.get('data_type', {}).upper()
+                if tipo_dado == 'B':
                   tipo_resposta = 'binaria'
-                else:
+                elif tipo_dado == 'C':
                   tipo_resposta = 'categorica'
+                else:
+                  tipo_resposta = 'multiescolha'
                 
                 questao = Questao(
                     id_condicao_saude=id_condicao_saude,

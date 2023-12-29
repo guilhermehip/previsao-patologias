@@ -20,6 +20,8 @@ Ordem de run dos scripts:
 4 - popularPatologiasCondicoes
 5 - popularQuestoes
 6 - popularQuestoesFk
+7 - popularAlternativas
+8 - popularFichaClinica
 
-// TODO: AS PERGUNTAS POSSUEM VALORES POSSÍVEIS (ESTUDAR JSONB OU COLUNA NOVA)
+
 // TODO: FAZER TABELAS FALTANTES (FICHA CLÍNICA E TB_DIAGNOSTICOS)
