@@ -12,7 +12,6 @@ class Command(BaseCommand):
             'popularQuestoesFk',
             'popularAlternativas',
             'popularFichaClinica',
-            'popularFichaClinicaRespostas'
         ]
 
         for script in scripts:
