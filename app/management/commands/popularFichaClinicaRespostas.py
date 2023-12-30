@@ -18,10 +18,13 @@ class Command(BaseCommand):
                 return variable
   
         # Crie uma sessão do Spark
-        spark = SparkSession.builder.appName("Processar respostas de ficha clínica").config("spark.jars", "./app/storage/drivers/postgresql-42.7.1.jar").getOrCreate()
-        
+        spark = SparkSession.builder.appName("Processar respostas de ficha clínica") \
+            .config("spark.jars", "./app/storage/drivers/postgresql-42.7.1.jar") \
+            .config("spark.executor.memory", "4g") \
+            .getOrCreate()
+            
         # Carregue o arquivo CSV de pacientes
-        df = spark.read.format("csv").option("header", True).load("./app/storage/csv/release_patients.csv")
+        df = spark.read.format("csv").option("header", True).load("./app/storage/csv/release_patients.csv").limit(1000)
         
         # Carregue o arquivo JSON de evidências
         with open("./app/storage/json/release_evidences.json", "r") as arquivo:
@@ -89,17 +92,21 @@ class Command(BaseCommand):
                 
                 respostas_lista.add([int(alternativa), int(index), int(questao)])
                 
-            print(index)
-
+        df = df.repartition(1000)
         df.foreach(process_row)
+        print(">>> Processamento de dados rodado! <<<")
         
         flat_respostas_lista = list(chain.from_iterable(respostas_lista.value))
+        print(">>> Respostas Flatadas <<<")
         
         respostas = spark.createDataFrame(flat_respostas_lista, ["id_alternativa", "id_ficha_clinica", "id_questao"])
+        print(">>> Dataframe criado! <<<")
+        
         respostas = respostas.withColumn("dt_criacao", current_timestamp())
         respostas = respostas.withColumn("dt_atualizacao", current_timestamp())
-        respostas.show()
-        
+        print(">>> Timestamps criadas! <<<")
+
+        respostas = respostas.repartition(1000)
         respostas.write \
             .format("jdbc") \
             .option("driver", "org.postgresql.Driver") \
@@ -108,4 +115,4 @@ class Command(BaseCommand):
             .option("user", "postgres") \
             .option("password", "test") \
             .mode("append") \
-            .save()            
+            .save()
