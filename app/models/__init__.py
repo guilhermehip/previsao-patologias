@@ -6,3 +6,4 @@ from .patologiaCondicaoSaude import PatologiaCondicaoSaude
 from .alternativa import Alternativa
 from .fichaClinica import FichaClinica
 from .fichaClinicaRespostas import FichaClinicaRespostas
+from .diagnostico import Diagnostico
