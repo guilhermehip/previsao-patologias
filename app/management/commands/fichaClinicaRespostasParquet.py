@@ -3,20 +3,29 @@ import json
 from pyspark.sql import SparkSession
 from pyspark.sql.types import ArrayType, StringType
 from pyspark.sql.functions import udf
-import psycopg2
+from pyspark.accumulators import AccumulatorParam
+from itertools import chain
+from pyspark.sql.functions import current_timestamp
 import time
-from datetime import datetime, timezone
     
 class Command(BaseCommand):
     def handle(self, *args, **options):
+
+        class ListParam(AccumulatorParam):
+            def zero(self, v):
+                return []
+            def addInPlace(self, variable, value):
+                variable.append(value)
+                return variable
+  
         # Crie uma sessão do Spark
-        spark = SparkSession.builder.appName("Processar respostas de ficha clínica") \
+        spark = SparkSession.builder.appName("Gravar respostas de ficha clínica em formato Parquet") \
             .config("spark.jars", "./app/storage/drivers/postgresql-42.7.1.jar") \
             .config("spark.executor.memory", "4g") \
             .getOrCreate()
             
         # Carregue o arquivo CSV de pacientes
-        df = spark.read.format("csv").option("header", True).load("./app/storage/csv/release_patients.csv")
+        df = spark.read.format("csv").option("header", True).load("./app/storage/csv/release_patients.csv").limit(1000)
         
         # Carregue o arquivo JSON de evidências
         with open("./app/storage/json/release_evidences.json", "r") as arquivo:
@@ -63,24 +72,15 @@ class Command(BaseCommand):
         condicoes_saude_collected = condicoes_saude.collect()
         questoes_collected = questoes.collect()
         alternativas_collected = alternativas.collect()
-         
-        def process_row(row, dt = datetime.now(timezone.utc)):
+        
+        respostas_lista = spark.sparkContext.accumulator([], ListParam())
+
+        def process_row(row):
             evidences = row.EVIDENCES
             index = int(row.ID) + 1
-            
-            connection = psycopg2.connect(
-                dbname="previsao-patologias",
-                user="postgres",
-                password="test",
-                host="localhost",
-                port="5432"
-            )
-            
-            cursor = connection.cursor()
-            
             for evidence in evidences:
-                if "@" in evidence:
-                    slug_condicao_saude, alternativa = evidence.split("_@_")
+                if "_@_" in evidence:
+                    slug_condicao_saude, alternativa = evidence.split("_@_")                        
                     condicao_saude = [cs.id_condicao_saude for cs in condicoes_saude_collected if cs['slug'] == slug_condicao_saude][0]
                     alternativa_valor = dados_json[slug_condicao_saude]['value_meaning'].get(alternativa, {}).get('en', alternativa)
                 else:
@@ -91,12 +91,25 @@ class Command(BaseCommand):
                 questao = [q.id_questao for q in questoes_collected if q['id_condicao_saude'] == condicao_saude][0]
                 alternativa = [a.id_alternativa for a in alternativas_collected if a['alternativa'] == alternativa_valor and a['id_questao'] == questao][0]
                 
-                query = "INSERT INTO tb_fichas_clinicas_respostas (dt_criacao, dt_atualizacao, id_alternativa, id_ficha_clinica, id_questao) VALUES (%s, %s, %s, %s, %s)"
-                cursor.execute(query, (dt, dt, int(alternativa), int(index), int(questao)))
-                connection.commit()
+                respostas_lista.add([int(alternativa), int(index), int(questao)])
                 
         df = df.repartition(3000)
         
         start_time = time.time()
         df.foreach(process_row)
+        print(">>> Processamento de dados rodado! <<<")
+        
+        flat_respostas_lista = list(chain.from_iterable(respostas_lista.value))
+        print(">>> Respostas Flatadas <<<")
+        
+        respostas = spark.createDataFrame(flat_respostas_lista, ["id_alternativa", "id_ficha_clinica", "id_questao"])
+        print(">>> Dataframe criado! <<<")
+        
+        respostas = respostas.withColumn("dt_criacao", current_timestamp())
+        respostas = respostas.withColumn("dt_atualizacao", current_timestamp())
+        print(">>> Timestamps criadas! <<<")
+
+        respostas = respostas.repartition(10000)
+        respostas.write.mode("overwrite").parquet("./app/storage/parquet/ficha_clinica_respostas.parquet")
+        print(">>> Parquet criado! <<<")
         print("--- %s seconds ---" % (time.time() - start_time))
