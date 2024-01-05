@@ -2,7 +2,9 @@ app/__pycache__
 app/models/__pycache__
 app/migrations/__pycache__
 app/management/commands/__pycache__
+app/storage/parquet
 app/storage/csv/release_patients.csv
+app/storage/csv/ficha_clinica_estruturada.csv
 app/storage/csv/release_test_patients.csv
 app/storage/csv/release_train_patients.csv
 app/storage/csv/release_validate_patients.csv
