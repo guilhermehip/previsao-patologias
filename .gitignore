@@ -8,4 +8,7 @@ app/storage/csv/ficha_clinica_estruturada.csv
 app/storage/csv/release_test_patients.csv
 app/storage/csv/release_train_patients.csv
 app/storage/csv/release_validate_patients.csv
+app/storage/csv/dataframe_modelo.csv
+app/storage/csv/dataframe_amostra0.2.csv
+app/storage/pickle
 appConfig/__pycache__

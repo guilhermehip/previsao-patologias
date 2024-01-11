@@ -14,6 +14,6 @@ class Command(BaseCommand):
         
         df.write \
             .format("parquet") \
-            .mode("append") \
+            .mode("overwrite") \
             .option("path", './app/storage/parquet/ficha_clinica_estruturada.parquet') \
             .save()
