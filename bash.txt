@@ -22,6 +22,4 @@ Ordem de run dos scripts:
 6 - popularQuestoesFk
 7 - popularAlternativas
 8 - popularFichaClinica
-
-
-// TODO: FAZER TABELAS FALTANTES (FICHA CLÍNICA E TB_DIAGNOSTICOS)
+9 - popularDiagnosticos
