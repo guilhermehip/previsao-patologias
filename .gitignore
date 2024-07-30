@@ -11,4 +11,5 @@ app/storage/csv/release_validate_patients.csv
 app/storage/csv/dataframe_modelo.csv
 app/storage/csv/dataframe_amostra0.2.csv
 app/storage/pickle
+app/storage/xlsx
 appConfig/__pycache__
